@@ -1,0 +1,117 @@
+---
+title: "The Exponential Distribution with the Central Limit Theorem^[This analysis report is the final project-Part1 of the Statistical Inference (Coursera) course at Johns Hopkins University]"
+author: "Aliakbar Safilian^[Email: a.a.safilian@gmail.com]"
+date: "December 12, 2018"
+output: 
+        pdf_document:
+          number_sections: yes
+urlcolor: blue
+header-includes:
+  - \usepackage{color}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+```
+
+ 
+
+# Overview {#overview}
+We show that the distribution of averages of exponentially distributed^[https://en.wikipedia.org/wiki/Exponential_distribution] variables becomes that of a standard
+normal as the sample size increases (according to the Central Limit Theorem (CLT)^[https://en.wikipedia.org/wiki/Central_limit_theorem]).
+<!--We investigate the *exponential distribution*^[https://en.wikipedia.org/wiki/Exponential_distribution] in R and compare it with the Central Limit Theorem (CLT)^[https://en.wikipedia.org/wiki/Central_limit_theorem]. ``The CLT states that the distribution of averages of iid variables becomes that of a standard
+normal as the sample size increases''[@caffo2016].
+
+
+The rest of this report is structured as follows: Sec.  [2](#simulation) includes our simulations of the distribution. In Sec. [3](#mean) and Sec. [4](#variance), we compare the sample mean and the sample variance with the theoretical mean and the theoretical variance, respecitly. Finally, in Sec. [5](#distribution),  we show that the sample distribution is approximately normal. -->
+
+# Simulations {#simulations}
+Let us first fix some parameters, including the sample size, the number of simulations, the rate of our exponential distribution. <!--As we know, the mean and the standard deviation of an exponential distribution are both equal to (1/rate). They are saved into two variables denoted by **mu** and **sigma**, respectively. -->  
+
+```{r parameters}
+n <- 40   # sample size
+lambda <- 0.2 # the rate of the exponential distribution
+t <- 1000 # number of simulations
+mu <- 1/lambda # the mean of the distribution
+sigma <- 1/lambda # the standard deviation of the distribution
+```
+
+The following script simulates `r t` (**t**) sample means with size `r n` (**n**). The result is stored into a variable named **mns**. <!--We take advantage of the **rexp** command to make simulations of the exponential distribution. Using by a **for** loop, we do `r t` simulations. -->
+
+```{r simulation}
+mns <- NULL
+for(i in 1:t) mns = c(mns, mean(rexp(n, lambda)))
+```
+
+
+
+
+# Sample Mean versus Theoretical Mean {#mean}
+<!--The following script outputs the sample mean (**mns**) and the mean of our exponential distibution (**mu**): 
+```{r}
+mean(mns) # sample mean
+mu # theoretical mean
+```
+-->
+
+The sample mean, i.e.,  **mean(mns) $\approx$ `r round(mean(mns), 2)`**, and the theoretical mean, i.e., **mu = `r mu`**, are almost equal. The following plot shows that as number of simulations increases, the sample mean (in $\color{blue}blue$) converges to the theoretical mean (in $\color{red}red$). 
+
+```{r, fig.height = 3, fig.width = 3.5}
+cummns <- cumsum(mns)/(1:t)
+plot(cummns, type="l", lwd=2, col = "blue", 
+     cex=1, cex.lab = .7, cex.axis = .6, cex.main = .7, cex.sub=.5, 
+     main = "Sample Mean versus Theoretical Mean",
+     xlab = "Number of simulations", ylab = "Cumulative Mean")
+abline(h=sigma, col="red", lwd=1)
+```
+
+
+# Sample Variance versus Theoretical Variance {#variance}
+<!--The following script outputs the sample variance and the theoretical standard deviation (i.e., **sigma^/n**): 
+```{r}
+var(mns) # sample variance
+sigma^2/n # theoreical variance
+```
+-->
+The sample variance, i.e, **var(mns) $\approx$ `r round(var(mns), 2)`**, and the theoretical variance, **sigma^2/n = `r sigma^2/n`**, are almost the same. The following plot shows that as number of simulations increases, the sample variance converges to the theoretical variance: 
+
+```{r, fig.height = 3, fig.width = 3.5}
+vars <- cumsum(mns^2)/(1:t)-cummns^2
+plot(vars, type="l", lwd=2, col = "blue", 
+     cex=1, cex.lab = .7, cex.axis = .6, cex.main = .7, cex.sub=.5,  
+     main = "Sample Variance versus Theoretical Variance",
+     xlab = "Number of Simulations", ylab = "Cumulative Variance")
+abline(h=sigma^2/n, col="red", lwd=1)
+```
+
+# Distribution {#distribution}
+Let us denote the distribution of sample means by $\bar{X}_n$, where $n$ denotes the sample size. According to the CLT, $\bar{X}_n$ ~ $N(\mu, \sigma^2/n)$, where $\mu$ and $\sigma$ are the mean and standard deviation of the distribution, respectively. We are going to show that this holds in our case, where $\mu = `r mu`$, $\sigma = `r sigma`$, and $n = 40$. 
+
+The following script visualizes the density of our sample mean (denoted by a $\color{blue}blue$ line), and the normal distibution $N(\mu, \sigma^2/n) = N(`r mu`, `r sigma^2/n`)$ (denoted by a $\color{red}red$ line). The densities are shown over a histogram of our simulation, **mns**. The blue and red straight lines indicate where the mean of the distributions are, respectively (they almost overlap). As we see in the figure, our simulation makes a good approxmiation of the corresponding normal distribution. 
+
+```{r dist, fig.height = 3.5, fig.width = 4}
+hist(mns, density = 20, breaks = 20, prob = TRUE, 
+     cex.lab = .8, cex.axis = .8, cex = 1, cex.main = .7, 
+     main = "The Distribution of Averages of 40 Exponentials", xlab = "means")
+lines(density(mns), lwd = 2, col = "blue")
+curve(dnorm(x, mean = mu, sd = sigma/sqrt(n)), col = "red", lwd = 3, add = TRUE)
+abline(v = mean(mns), col = "blue")
+abline(v = mu, col = "red")
+```
+<!--
+# References
+
+---
+references:
+- id: caffo2016
+  title: Statistical Inference for Data Science
+  author:
+  - family: Caffo
+    given: Brian
+  URL: 'https://leanpub.com/LittleInferenceBook'
+  publisher: Lean Publishing
+  type: book
+  issued:
+    year: 2016
+    
+--->
